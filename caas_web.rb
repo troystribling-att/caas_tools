@@ -9,16 +9,22 @@ require 'logger'
 class CaaS
 
   ### types
-  LOGIN_TYPE    = 'application/vnd.com.sun.cloud.Login+json'
-  MESSAGE_TYPE  = 'application/vnd.com.sun.cloud.common.Messages+json'
-  ACCOUNT_TYPE  = 'application/vnd.com.sun.cloud.common.Account+json'
-  LOCATION_TYPE = 'application/vnd.com.sun.cloud.common.Location+json'
-  CLOUD_TYPE    = 'application/vnd.com.sun.cloud.common.Cloud+json'
-  VDC_TYPE      = 'application/vnd.com.sun.cloud.common.VDC+json'
-  CLUSTER_TYPE  = 'application/vnd.com.sun.cloud.common.Cluster+json'
-  VNET_TYPE     = 'application/vnd.com.sun.cloud.common.Vnet+json'
-  VM_TYPE       = 'application/vnd.com.sun.cloud.common.Vm+json'
-  VERSION_TYPE  = 'application/vnd.com.sun.cloud.Version+json'
+  LOGIN_TYPE      = 'application/vnd.com.sun.cloud.Login+json'
+  MESSAGE_TYPE    = 'application/vnd.com.sun.cloud.common.Messages+json'
+  ACCOUNT_TYPE    = 'application/vnd.com.sun.cloud.common.Account+json'
+  LOCATION_TYPE   = 'application/vnd.com.sun.cloud.common.Location+json'
+  VMTEMPLATE_TYPE = 'application/vnd.com.sun.cloud.common.VMTemplate+json'
+  CLOUD_TYPE      = 'application/vnd.com.sun.cloud.common.Cloud+json'
+  VDC_TYPE        = 'application/vnd.com.sun.cloud.common.VDC+json'
+  CLUSTER_TYPE    = 'application/vnd.com.sun.cloud.common.Cluster+json'
+  VNET_TYPE       = 'application/vnd.com.sun.cloud.common.Vnet+json'
+  VOLUME_TYPE     = 'application/vnd.com.sun.cloud.common.Volume+json'
+  VM_TYPE         = 'application/vnd.com.sun.cloud.common.Vm+json'
+  VERSION_TYPE    = 'application/vnd.com.sun.cloud.Version+json'
+
+  #-------------------------------------------------------------------------------------------------
+  MAX_RETRIES     = 60
+  SLEEP_RETRY     = 10
 
   #-------------------------------------------------------------------------------------------------
   attr_reader :session, :site, :uid, :passwd, :logger
@@ -62,15 +68,65 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  # cloud
+  # locations
   #-------------------------------------------------------------------------------------------------
-  def get_cloud(uri)
-     to_caas_object(json_to_hash(get(:uri    => uri,
-                                     :accept => "#{CLOUD_TYPE}, #{MESSAGE_TYPE}")))
+  def get_location(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{LOCATION_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
-  def list_clouds(args={})
+  def get_all_locations
+    get_all(:location)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_locations(args={})
+    json_to_hash(get(:uri    => locations_uri,
+                     :accept => "#{LOCATION_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def locations_uri
+     '/locations'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+
+  #-------------------------------------------------------------------------------------------------
+  # vm templates
+  #-------------------------------------------------------------------------------------------------
+  def get_vmtemplate(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{VMTEMPLATE_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_vmtemplates
+    get_all(:vmtemplate)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_vmtemplates(args={})
+    json_to_hash(get(:uri    => vmtemplates_uri,
+                     :accept => "#{VMTEMPLATE_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def vmtemplates_uri
+     '/vmtemplates'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # cloud
+  #-------------------------------------------------------------------------------------------------
+  def get_cloud(uri)
+     json_to_hash(get(:uri    => uri,
+                      :accept => "#{CLOUD_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_clouds()
     json_to_hash(get(:uri    => clouds_uri,
                      :accept => "#{CLOUD_TYPE}, #{MESSAGE_TYPE}"))
   end
@@ -85,7 +141,7 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def get_vdc(uri)
     json_to_hash(get(:uri    => uri,
-                     :accept => "#{VDC_TYPE}, #{MESSAGE_TYPE}")))
+                     :accept => "#{VDC_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -95,13 +151,13 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def list_vdcs(cloud)
-    json_to_hash(get(:uri    => vdc_uri(cloud),
+    json_to_hash(get(:uri    => vdcs_uri(cloud),
                      :accept => "#{VDC_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
-  def vdc_uri(cloud)
-     cloud[:uri] + '/vdcs'
+  def vdcs_uri(cloud)
+     cloud[:cloud_uri] + '/vdcs'
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -109,7 +165,7 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def get_cluster(uri)
     json_to_hash(get(:uri    => uri,
-                     :accept => "#{CLUSTER_TYPE}, #{MESSAGE_TYPE}")))
+                     :accept => "#{CLUSTER_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -119,12 +175,12 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def list_clusters(vdc)
-    json_to_hash(get(:uri    => cluster_uri(vdc),
+    json_to_hash(get(:uri    => clusters_uri(vdc),
                      :accept => "#{CLUSTER_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
-  def cluster_uri(vdc)
+  def clusters_uri(vdc)
      vdc[:uri] + '/clusters'
   end
 
@@ -132,8 +188,8 @@ class CaaS
   # vnets
   #-------------------------------------------------------------------------------------------------
   def get_vnet(uri)
-    to_caas_object(json_to_hash(get(:uri    => uri,
-                                    :accept => "#{VNET_TYPE}, #{MESSAGE_TYPE}")))
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{VNET_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -143,13 +199,100 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def list_vnets(cluster)
-    json_to_hash(get(:uri    => vnet_uri(cluster),
+    json_to_hash(get(:uri    => vnets_uri(cluster),
                      :accept => "#{VNET_TYPE}, #{MESSAGE_TYPE}"))
   end
 
   #-------------------------------------------------------------------------------------------------
-  def vnet_uri(cluster)
+  def vnets_uri(cluster)
      cluster[:uri] + '/vnets'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # volumes
+  #-------------------------------------------------------------------------------------------------
+  def get_volume(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{VOLUME_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_volumes(args)
+    get_all(:volume, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_volumes(args)
+    json_to_hash(get(:uri    => volumes_uri,
+                     :accept => "#{VOLUME_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def volumes_uri(vdc)
+     vdc[:uri] + '/volumes'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # vms
+  #-------------------------------------------------------------------------------------------------
+  def create_vm(args)
+    validate([:name, :vmtemplate, :vnets, :cluster, :location], args)
+    vnets = args[:vnets].map do |n| 
+      n.kind_of?(String) ? n : n[:uri]
+    end
+    template_uri = args[:vmtemplate].kind_of?(String) ?  args[:vmtemplate] : args[:vmtemplate][:uri]
+    location_uri =  args[:location].kind_of?(String) ?  args[:location] : args[:location][:uri]
+    body = {:name           => args[:name],
+            :description    => args[:description] || '',
+            :vmtemplate_uri => template_uri,
+            :locations_uri  => location_uri
+            :vnets          => vnets}
+    res = post(:uri          => vms_uri(args[:cluster]),
+               :body         => body,
+               :accept       => MESSAGE_TYPE,
+               :content_type => VM_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_vm(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{VM_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_vms(args)
+    get_all(:vm, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_vms(cluster)
+    json_to_hash(get(:uri    => vms_uri(cluster),
+                     :accept => "#{VM_TYPE}, #{MESSAGE_TYPE}"))
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def delete_vm(vm)
+     delete(:uri    => vm[:uri],
+            :accept => MESSAGE_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def control_vm(vm, control, args={})
+    control_uri = case control
+                  when :clone then vm[:uri] + '/clone'
+                  when :customize then  vm[:uri] + '/customize'
+                  else
+                    vm[:controllers][control]
+                  end
+    post(:uri          => control_uri,
+         :body         => args.update(:name => 'customize'),
+         :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
+         :content_type => VM_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def vms_uri(cluster)
+     cluster[:uri] + '/vms'
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -192,9 +335,9 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def get_all(obj, args={})
-    send(('list_'+obj.to_s+'s').to_sym, args).map{|(u,o)| u.to_s}.inject([]) do |all, uri|
+    send(('list_' + obj.to_s + 's').to_sym, args).map{|(u,o)| u.to_s}.inject([]) do |all, uri|
       begin
-        all << send(('get_'+obj).to_sym, uri)
+        all << send(('get_' + obj.to_s).to_sym, uri)
       rescue; all; end
     end
   end
@@ -216,6 +359,29 @@ class CaaS
     elsif obj.kind_of?(Array)
       obj.map{|o| symbolize_keys(o)}
     else; obj; end
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def validate(expect, given)
+    given_args = given.keys
+    expect.each{|e| (raise ArgumentError, "#{e} missing") unless given_args.include?(e)}
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def retry_until_found
+    try_count = 0
+    begin
+      try_count += 1
+      yield
+    rescue RestClient::ResourceNotFound
+      sleep(SLEEP_RETRY)
+      try_count < MAX_RETRIES ? retry : raise
+    rescue RestClient::RequestFailed => exp
+      if exp.http_code.eql?(409)
+        sleep(SLEEP_RETRY)
+        try_count < MAX_RETRIES ? retry : raise
+      else; raise; end
+    end
   end
 
 end #### CaaS
