@@ -11,15 +11,15 @@ class CaaS
   ### types
   LOGIN_TYPE      = 'application/vnd.com.sun.cloud.Login+json'
   MESSAGE_TYPE    = 'application/vnd.com.sun.cloud.common.Messages+json'
-  ACCOUNT_TYPE    = 'application/vnd.com.sun.cloud.common.Account+json'
-  LOCATION_TYPE   = 'application/vnd.com.sun.cloud.common.Location+json'
-  VMTEMPLATE_TYPE = 'application/vnd.com.sun.cloud.common.VMTemplate+json'
-  CLOUD_TYPE      = 'application/vnd.com.sun.cloud.common.Cloud+json'
-  VDC_TYPE        = 'application/vnd.com.sun.cloud.common.VDC+json'
-  CLUSTER_TYPE    = 'application/vnd.com.sun.cloud.common.Cluster+json'
-  VNET_TYPE       = 'application/vnd.com.sun.cloud.common.Vnet+json'
-  VOLUME_TYPE     = 'application/vnd.com.sun.cloud.common.Volume+json'
-  VM_TYPE         = 'application/vnd.com.sun.cloud.common.Vm+json'
+  ACCOUNT_TYPE    = 'application/vnd.com.sun.cloud.Account+json'
+  LOCATION_TYPE   = 'application/vnd.com.sun.cloud..Location+json'
+  VMTEMPLATE_TYPE = 'application/vnd.com.sun.cloud.VMTemplate+json'
+  CLOUD_TYPE      = 'application/vnd.com.sun.cloud.Cloud+json'
+  VDC_TYPE        = 'application/vnd.com.sun.cloud.VDC+json'
+  CLUSTER_TYPE    = 'application/vnd.com.sun.cloud.Cluster+json'
+  VNET_TYPE       = 'application/vnd.com.sun.cloud.Vnet+json'
+  VOLUME_TYPE     = 'application/vnd.com.sun.cloud.Volume+json'
+  VM_TYPE         = 'application/vnd.com.sun.cloud.Vm+json'
   VERSION_TYPE    = 'application/vnd.com.sun.cloud.Version+json'
 
   #-------------------------------------------------------------------------------------------------
@@ -245,7 +245,7 @@ class CaaS
     body = {:name           => args[:name],
             :description    => args[:description] || '',
             :vmtemplate_uri => template_uri,
-            :locations_uri  => location_uri
+            :locations_uri  => location_uri,
             :vnets          => vnets}
     res = post(:uri          => vms_uri(args[:cluster]),
                :body         => body,
