@@ -277,15 +277,28 @@ class CaaS
    end
 
   #-------------------------------------------------------------------------------------------------
-  def control_vm(vm, control, args={})
+  def update_vm(vm, body)
+    put(:uri          => vm[:uri],
+        :body         => body,
+        :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
+        :content_type => VM_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def control_vm(vm, control, body={})
+    validate([:note, :description], body)
     control_uri = case control
-                  when :clone then vm[:uri] + '/clone'
-                  when :customize then  vm[:uri] + '/customize'
+                  when :clone then 
+                    validate([:name], body)
+                    vm[:controllers][:clone]
+                  when :customize then  
+                    body.update(:name => 'customize')
+                    vm[:uri] + '/customize'
                   else
-                    vm[:controllers][control]
+                    (ctl = vm[:controllers][control]) ? ctl : raise(ArgumentError, "'#{control}' is invalid")
                   end
     post(:uri          => control_uri,
-         :body         => args.update(:name => 'customize'),
+         :body         => body,
          :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
          :content_type => VM_TYPE)
   end
@@ -364,7 +377,7 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def validate(expect, given)
     given_args = given.keys
-    expect.each{|e| (raise ArgumentError, "#{e} missing") unless given_args.include?(e)}
+    expect.each{|e| raise(ArgumentError, "#{e} missing") unless given_args.include?(e)}
   end
 
   #-------------------------------------------------------------------------------------------------
