@@ -4,6 +4,9 @@ require 'json'
 require 'logger'
 
 #-------------------------------------------------------------------------------------------------
+class CaaSError < Exception; end
+
+#-------------------------------------------------------------------------------------------------
 # CaaS interface
 #-------------------------------------------------------------------------------------------------
 class CaaS
@@ -23,7 +26,7 @@ class CaaS
   VERSION_TYPE    = 'application/vnd.com.sun.cloud.Version+json'
 
   #-------------------------------------------------------------------------------------------------
-  MAX_RETRIES     = 60
+  MAX_RETRIES     = 120
   SLEEP_RETRY     = 10
 
   #-------------------------------------------------------------------------------------------------
@@ -126,9 +129,14 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  def list_clouds()
+  def list_clouds(arg={})
     json_to_hash(get(:uri    => clouds_uri,
                      :accept => "#{CLOUD_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_clouds
+    get_all(:cloud)
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -217,13 +225,13 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  def get_all_volumes(args)
+  def get_all_volumes(vdc)
     get_all(:volume, args)
   end
 
   #-------------------------------------------------------------------------------------------------
-  def list_volumes(args)
-    json_to_hash(get(:uri    => volumes_uri,
+  def list_volumes(vdc)
+    json_to_hash(get(:uri    => volumes_uri(vdc),
                      :accept => "#{VOLUME_TYPE}, #{MESSAGE_TYPE}"))
   end
 
@@ -381,12 +389,14 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  def retry_until_found
+  def self.retry_until
     try_count = 0
     begin
       try_count += 1
-      yield
-    rescue RestClient::ResourceNotFound
+      result = yield
+      raise(CaaSError) unless result
+      result
+    rescue RestClient::ResourceNotFound, Errno::ECONNREFUSED
       sleep(SLEEP_RETRY)
       try_count < MAX_RETRIES ? retry : raise
     rescue RestClient::RequestFailed => exp
@@ -394,6 +404,9 @@ class CaaS
         sleep(SLEEP_RETRY)
         try_count < MAX_RETRIES ? retry : raise
       else; raise; end
+    rescue CaaSError
+      sleep(SLEEP_RETRY)
+      try_count < MAX_RETRIES ? retry : raise
     end
   end
 
