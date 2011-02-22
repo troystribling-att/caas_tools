@@ -2,20 +2,24 @@ require './caas_web'
 
 #----------------------------------------------------------------------------------------------------
 def run_create_create_vm_test_forever(user, password, nthreads=2, nvms=5, site = 'https://206.17.20.10/CirrusServices/resources')
-  session = create_test_session(user, password, site)
+  nrun = 1
   while true
+    puts "RUN NUMBER: #{nrun}"
+    ses = create_test_session(user, password, site)
     spawn_create_vm_test_threads(ses, nthreads, nvms)
   end
 end
 
 #----------------------------------------------------------------------------------------------------
 def spawn_create_vm_test_threads(ses, nthreads=2, nvms=5)
+  threads = []
   nthreads.times do |n|
-    Thread.new do
-      puts "SPAWNING CREATE VM TEST THREAD: #{n}"
-      create_vm_test(ses, nvms)
-    end
+    threads << Thread.new do
+                 puts "SPAWNING CREATE VM TEST THREAD: #{n}"
+                 create_vm_test(ses, nvms)
+               end
   end
+  threads.each{|t| j.join}
 end
 
 #----------------------------------------------------------------------------------------------------

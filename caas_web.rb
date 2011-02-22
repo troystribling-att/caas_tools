@@ -12,18 +12,23 @@ class CaaSError < Exception; end
 class CaaS
 
   ### types
-  LOGIN_TYPE      = 'application/vnd.com.sun.cloud.Login+json'
-  MESSAGE_TYPE    = 'application/vnd.com.sun.cloud.common.Messages+json'
-  ACCOUNT_TYPE    = 'application/vnd.com.sun.cloud.Account+json'
-  LOCATION_TYPE   = 'application/vnd.com.sun.cloud..Location+json'
-  VMTEMPLATE_TYPE = 'application/vnd.com.sun.cloud.VMTemplate+json'
-  CLOUD_TYPE      = 'application/vnd.com.sun.cloud.Cloud+json'
-  VDC_TYPE        = 'application/vnd.com.sun.cloud.VDC+json'
-  CLUSTER_TYPE    = 'application/vnd.com.sun.cloud.Cluster+json'
-  VNET_TYPE       = 'application/vnd.com.sun.cloud.Vnet+json'
-  VOLUME_TYPE     = 'application/vnd.com.sun.cloud.Volume+json'
-  VM_TYPE         = 'application/vnd.com.sun.cloud.Vm+json'
-  VERSION_TYPE    = 'application/vnd.com.sun.cloud.Version+json'
+  LOGIN_TYPE           = 'application/vnd.com.sun.cloud.Login+json'
+  MESSAGE_TYPE         = 'application/vnd.com.sun.cloud.common.Messages+json'
+  ACCOUNT_TYPE         = 'application/vnd.com.sun.cloud.Account+json'
+  LOCATION_TYPE        = 'application/vnd.com.sun.cloud..Location+json'
+  VMTEMPLATE_TYPE      = 'application/vnd.com.sun.cloud.VMTemplate+json'
+  CLOUD_TYPE           = 'application/vnd.com.sun.cloud.Cloud+json'
+  VDC_TYPE             = 'application/vnd.com.sun.cloud.VDC+json'
+  CLUSTER_TYPE         = 'application/vnd.com.sun.cloud.Cluster+json'
+  VNET_TYPE            = 'application/vnd.com.sun.cloud.Vnet+json'
+  VOLUME_TYPE          = 'application/vnd.com.sun.cloud.Volume+json'
+  VM_TYPE              = 'application/vnd.com.sun.cloud.Vm+json'
+  FW_TYPE              = 'application/vnd.com.sun.cloud.Fw+json'
+  FW_RULE_TYPE         = 'application/vnd.com.sun.cloud.FwRule+json'
+  LB_POOL_MEMBERS_TYPE = 'application/vnd.com.sun.cloud.LbPoolMembers+json'
+  LB_POOL_TYPE         = 'application/vnd.com.sun.cloud.LbPool+json'
+  LB_TYPE              = 'application/vnd.com.sun.cloud.Lb+json'
+  VERSION_TYPE         = 'application/vnd.com.sun.cloud.Version+json'
 
   #-------------------------------------------------------------------------------------------------
   MAX_RETRIES     = 120
@@ -286,6 +291,7 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def update_vm(vm, body)
+    validate([:name], body)
     put(:uri          => vm[:uri],
         :body         => body,
         :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
@@ -317,8 +323,51 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  # utils
+  # firewall
   #-------------------------------------------------------------------------------------------------
+  def get_fw(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_fw(vnet)
+    get_all(:fw, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_fws(vnet)
+    json_to_hash(get(:uri    => fws_uri(uri),
+                     :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def update_fw(fw, body)
+    validate([:name], body)
+    put(:uri          => fw[:uri],
+        :body         => body,
+        :accept       => "#{FW_TYPE}, #{MESSAGE_TYPE}",
+        :content_type => FW_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def control_fws(fw)
+    validate([:note, :description], body)
+    control_uri = (ctl = fw[:controllers][control]) ? ctl : raise(ArgumentError, "'#{control}' is invalid")
+    post(:uri          => control_uri,
+         :body         => body,
+         :accept       => "#{FW_TYPE}, #{MESSAGE_TYPE}",
+         :content_type => FW_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def fws_uri(vnet)
+     vnet[:uri] + '/fws'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # utils
+  #------------------------------------------------------------------------------------------------
   def post(args)
     body = args[:body] || {}
     headers = (args[:headers] || {}).update(:accept=>args[:accept],
