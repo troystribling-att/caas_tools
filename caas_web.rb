@@ -24,9 +24,9 @@ class CaaS
   VOLUME_TYPE          = 'application/vnd.com.sun.cloud.Volume+json'
   VM_TYPE              = 'application/vnd.com.sun.cloud.Vm+json'
   FW_TYPE              = 'application/vnd.com.sun.cloud.Fw+json'
-  FW_RULE_TYPE         = 'application/vnd.com.sun.cloud.FwRule+json'
-  LB_POOL_MEMBERS_TYPE = 'application/vnd.com.sun.cloud.LbPoolMembers+json'
-  LB_POOL_TYPE         = 'application/vnd.com.sun.cloud.LbPool+json'
+  FWRULE_TYPE          = 'application/vnd.com.sun.cloud.FwRule+json'
+  LBPOOL_TYPE          = 'application/vnd.com.sun.cloud.LbPool+json'
+  LBPOOL_MEMBERS_TYPE  = 'application/vnd.com.sun.cloud.LbPoolMembers+json'
   LB_TYPE              = 'application/vnd.com.sun.cloud.Lb+json'
   VERSION_TYPE         = 'application/vnd.com.sun.cloud.Version+json'
 
@@ -98,8 +98,6 @@ class CaaS
   def locations_uri
      '/locations'
   end
-
-  #-------------------------------------------------------------------------------------------------
 
   #-------------------------------------------------------------------------------------------------
   # vm templates
@@ -331,13 +329,13 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
-  def get_all_fw(vnet)
+  def get_all_fws(args)
     get_all(:fw, args)
   end
 
   #-------------------------------------------------------------------------------------------------
   def list_fws(vnet)
-    json_to_hash(get(:uri    => fws_uri(uri),
+    json_to_hash(get(:uri    => fws_uri(vnet),
                      :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
   end
 
@@ -351,18 +349,131 @@ class CaaS
    end
 
   #-------------------------------------------------------------------------------------------------
-  def control_fws(fw)
+  def control_fws(fw, body)
     validate([:note, :description], body)
     control_uri = (ctl = fw[:controllers][control]) ? ctl : raise(ArgumentError, "'#{control}' is invalid")
     post(:uri          => control_uri,
          :body         => body,
-         :accept       => "#{FW_TYPE}, #{MESSAGE_TYPE}",
+         :accept       => MESSAGE_TYPE,
          :content_type => FW_TYPE)
   end
 
   #-------------------------------------------------------------------------------------------------
   def fws_uri(vnet)
      vnet[:uri] + '/fws'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # firewall rules
+  #-------------------------------------------------------------------------------------------------
+  def create_fwrule(fw, body)
+    validate([:name, :description, :policy, :protocol, :ip, :port], body)
+    post(:uri          => fwrules_uri,
+         :body         => body,
+         :accept       => MESSAGE_TYPE,
+         :content_type => FWRULE_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_fwrule(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_fwrules(args)
+    get_all(:fwrule, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_fwrules(fw)
+    json_to_hash(get(:uri    => fwrules_uri(fe),
+                     :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def delete_fwrule(fwrule)
+     delete(:uri    => fwrule[:uri],
+            :accept => MESSAGE_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def update_fwrule(fwrule, body)
+    validate([:name], body)
+    put(:uri          => fw[:uri],
+        :body         => body,
+        :accept       => MESSAGE_TYPE,
+        :content_type => FW_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def fwrules_uri(fw)
+     fw[:uri] + '/fwrules'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # load balancer
+  #------------------------------------------------------------------------------------------------
+  def create_lb(vdc, body)
+    validate([:name, :description], body)
+    post(:uri          => lbs_uri(vdc),
+         :body         => body,
+         :accept       => MESSAGE_TYPE,
+         :content_type => LB_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_lb(uri)
+    json_to_hash(get(:uri    => uri,
+                     :accept => "#{LB_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_lbs(args)
+    get_all(:lb, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_lbs(vdc)
+    json_to_hash(get(:uri    => lbs_uri(vdc),
+                     :accept => "#{LB_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def update_lb(lb, body)
+    validate([:name], body)
+    put(:uri          => lb[:uri],
+        :body         => body,
+        :accept       => "#{LB_TYPE}, #{MESSAGE_TYPE}",
+        :content_type => LB_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def delete_lb(lb)
+     delete(:uri          => lb[:uri],
+            :accept       => MESSAGE_TYPE,
+            :content_type => LB_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def lbs_uri(vdc)
+     fw[:uri] + '/lbs'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # load balancer pool
+  #------------------------------------------------------------------------------------------------
+  def create_lbpool(lb, body)
+    validate([:name, :description], body)
+    post(:uri          => lbpools_uri(vdc),
+         :body         => body,
+         :accept       => MESSAGE_TYPE,
+         :content_type => LBPOOL_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def lbpools_uri(lb)
+     lb[:uri] + '/pools'
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -445,7 +556,7 @@ class CaaS
       result = yield
       raise(CaaSError) unless result
       result
-    rescue RestClient::ResourceNotFound, Errno::ECONNREFUSED
+    rescue RestClient::ResourceNotFound, Errno::ECONNREFUSED, RestClient::ServerBrokeConnection
       sleep(SLEEP_RETRY)
       try_count < MAX_RETRIES ? retry : raise
     rescue RestClient::RequestFailed => exp
