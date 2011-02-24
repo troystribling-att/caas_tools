@@ -26,7 +26,7 @@ class CaaS
   FW_TYPE              = 'application/vnd.com.sun.cloud.Fw+json'
   FWRULE_TYPE          = 'application/vnd.com.sun.cloud.FwRule+json'
   LBPOOL_TYPE          = 'application/vnd.com.sun.cloud.LbPool+json'
-  LBPOOL_MEMBERS_TYPE  = 'application/vnd.com.sun.cloud.LbPoolMembers+json'
+  LBPOOL_MEMBER_TYPE   = 'application/vnd.com.sun.cloud.LbPoolMember+json'
   LB_TYPE              = 'application/vnd.com.sun.cloud.Lb+json'
   VERSION_TYPE         = 'application/vnd.com.sun.cloud.Version+json'
 
@@ -457,7 +457,7 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def lbs_uri(vdc)
-     fw[:uri] + '/lbs'
+     vdc[:uri] + '/lbs'
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -472,8 +472,91 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
+  def get_lbpool(uri)
+    json_to_hash(get(:uri          => uri,
+                     :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
+                     :content_type => LBPOOL_TYPE))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_lbpools(args)
+    get_all(:lbpool, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_lbpools(lb)
+    json_to_hash(get(:uri    => lbpools_uri(lb),
+                     :accept => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def update_lbpool(lbpool, body)
+    validate([:description], body)
+    put(:uri          => lbpool[:uri],
+        :body         => body,
+        :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
+        :content_type => LBPOOL_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def delete_lbpool(lbpool)
+     delete(:uri          => lb[:uri],
+            :accept       => MESSAGE_TYPE,
+            :content_type => LBPOOL_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
   def lbpools_uri(lb)
      lb[:uri] + '/pools'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  # load balancer pool member
+  #------------------------------------------------------------------------------------------------
+  def create_lbpool_member(lbpool, body)
+    validate([:name, :description, :ip, :port], body)
+    post(:uri          => lbpool_members_uri(vdc),
+         :body         => body,
+         :accept       => MESSAGE_TYPE,
+         :content_type => LBPOOL_MEMBER_TYPE)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_lbpool_member(uri)
+    json_to_hash(get(:uri          => uri,
+                     :accept       => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}",
+                     :content_type => LBPOOL_MEMBER_TYPE))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def get_all_lbpool_members(args)
+    get_all(:lbpool_member, args)
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def list_lbpool_members(lbpool)
+    json_to_hash(get(:uri    => lbpool_members_uri(lb),
+                     :accept => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}"))
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def update_lbpool_member(lbpool_member, body)
+    validate([:name], body)
+    put(:uri          => lbpool_member[:uri],
+        :body         => body,
+        :accept       => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}",
+        :content_type => LBPOOL_MEMBER_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def delete_lbpool_member(lbpool)
+     delete(:uri          => lb[:uri],
+            :accept       => MESSAGE_TYPE)
+   end
+
+  #-------------------------------------------------------------------------------------------------
+  def lbpool_members_uri(lbpool)
+     lbpool[:uri] + '/members'
   end
 
   #-------------------------------------------------------------------------------------------------
