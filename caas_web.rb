@@ -324,8 +324,12 @@ class CaaS
   # firewall
   #-------------------------------------------------------------------------------------------------
   def get_fw(uri)
-    json_to_hash(get(:uri    => uri,
-                     :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
+    fw = json_to_hash(get(:uri    => uri,
+                          :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
+    if fw[:fw_uri]
+      uri = fw.delete(:fw_uri)
+      fw.merge(:uri=>uri)
+    else; fw; end
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -349,16 +353,6 @@ class CaaS
    end
 
   #-------------------------------------------------------------------------------------------------
-  def control_fws(fw, body)
-    validate([:note, :description], body)
-    control_uri = (ctl = fw[:controllers][control]) ? ctl : raise(ArgumentError, "'#{control}' is invalid")
-    post(:uri          => control_uri,
-         :body         => body,
-         :accept       => MESSAGE_TYPE,
-         :content_type => FW_TYPE)
-  end
-
-  #-------------------------------------------------------------------------------------------------
   def fws_uri(vnet)
      vnet[:uri] + '/fws'
   end
@@ -366,18 +360,22 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   # firewall rules
   #-------------------------------------------------------------------------------------------------
-  def create_fwrule(fw, body)
-    validate([:name, :description, :policy, :protocol, :ip, :port], body)
-    post(:uri          => fwrules_uri,
-         :body         => body,
+  def create_fwrule(fw, vm, body)
+    validate([:name, :description, :policy, :protocol, :port], body)
+    post(:uri          => fwrules_uri(fw),
+         :body         => body.merge(:vm_uri => vm[:uri]),
          :accept       => MESSAGE_TYPE,
          :content_type => FWRULE_TYPE)
   end
 
   #-------------------------------------------------------------------------------------------------
   def get_fwrule(uri)
-    json_to_hash(get(:uri    => uri,
-                     :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
+    fwrule = json_to_hash(get(:uri    => uri,
+                              :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
+    if fwrule[:fwrule_uri]
+      uri = fwrule.delete(:fwrule_uri)
+      fwrule.merge(:uri=>uri)
+    else; fwrule; end
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -387,7 +385,7 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def list_fwrules(fw)
-    json_to_hash(get(:uri    => fwrules_uri(fe),
+    json_to_hash(get(:uri    => fwrules_uri(fw),
                      :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
   end
 
@@ -400,15 +398,15 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_fwrule(fwrule, body)
     validate([:name], body)
-    put(:uri          => fw[:uri],
+    put(:uri          => fwrule[:uri],
         :body         => body,
         :accept       => MESSAGE_TYPE,
-        :content_type => FW_TYPE)
+        :content_type => FWRULE_TYPE)
    end
 
   #-------------------------------------------------------------------------------------------------
   def fwrules_uri(fw)
-     fw[:uri] + '/fwrules'
+     fw[:uri] + '/rules'
   end
 
   #-------------------------------------------------------------------------------------------------
