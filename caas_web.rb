@@ -564,15 +564,15 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_lbpool_member(lbpool_member, body)
     validate([:name], body)
-    put(:uri          => lbpool_member[:uri],
-        :body         => body,
-        :accept       => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}",
-        :content_type => LBPOOL_MEMBER_TYPE)
+    json_to_hash(put(:uri          => lbpool_member[:uri],
+                     :body         => body,
+                     :accept       => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}",
+                     :content_type => LBPOOL_MEMBER_TYPE))
    end
 
   #-------------------------------------------------------------------------------------------------
   def delete_lbpool_member(lbpool)
-     delete(:uri          => lb[:uri],
+     delete(:uri          => lbpool[:uri],
             :accept       => MESSAGE_TYPE)
    end
 
