@@ -290,10 +290,10 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_vm(vm, body)
     validate([:name], body)
-    put(:uri          => vm[:uri],
-        :body         => body,
-        :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
-        :content_type => VM_TYPE)
+    json_to_hash(put(:uri          => vm[:uri],
+                     :body         => body,
+                     :accept       => "#{VM_TYPE}, #{MESSAGE_TYPE}",
+                     :content_type => VM_TYPE))
    end
 
   #-------------------------------------------------------------------------------------------------
@@ -324,12 +324,8 @@ class CaaS
   # firewall
   #-------------------------------------------------------------------------------------------------
   def get_fw(uri)
-    fw = json_to_hash(get(:uri    => uri,
-                          :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}"))
-    if fw[:fw_uri]
-      uri = fw.delete(:fw_uri)
-      fw.merge(:uri=>uri)
-    else; fw; end
+    fix_fw(json_to_hash(get(:uri    => uri,
+                            :accept => "#{FW_TYPE}, #{MESSAGE_TYPE}")))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -346,15 +342,23 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_fw(fw, body)
     validate([:name], body)
-    put(:uri          => fw[:uri],
-        :body         => body,
-        :accept       => "#{FW_TYPE}, #{MESSAGE_TYPE}",
-        :content_type => FW_TYPE)
+    fix_fw(json_to_hash(put(:uri          => fw[:uri],
+                            :body         => body,
+                            :accept       => "#{FW_TYPE}, #{MESSAGE_TYPE}",
+                            :content_type => FW_TYPE)))
    end
 
   #-------------------------------------------------------------------------------------------------
   def fws_uri(vnet)
      vnet[:uri] + '/fws'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def fix_fw(fw)
+    if fw[:fw_uri]
+      uri = fw.delete(:fw_uri)
+      fw.merge(:uri=>uri)
+    else; fw; end
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -370,12 +374,8 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def get_fwrule(uri)
-    fwrule = json_to_hash(get(:uri    => uri,
-                              :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}"))
-    if fwrule[:fwrule_uri]
-      uri = fwrule.delete(:fwrule_uri)
-      fwrule.merge(:uri=>uri)
-    else; fwrule; end
+    fix_fwrule(json_to_hash(get(:uri    => uri,
+                                :accept => "#{FWRULE_TYPE}, #{MESSAGE_TYPE}")))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -398,15 +398,23 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_fwrule(fwrule, body)
     validate([:name], body)
-    put(:uri          => fwrule[:uri],
-        :body         => body,
-        :accept       => MESSAGE_TYPE,
-        :content_type => FWRULE_TYPE)
-   end
+    fix_fwrule(json_to_hash(put(:uri          => fwrule[:uri],
+                                :body         => body,
+                                :accept       => MESSAGE_TYPE,
+                                :content_type => FWRULE_TYPE)))
+    end
 
   #-------------------------------------------------------------------------------------------------
   def fwrules_uri(fw)
      fw[:uri] + '/rules'
+  end
+
+  #-------------------------------------------------------------------------------------------------
+  def fix_fwrule(fwrule)
+    if fwrule[:fwrule_uri]
+      uri = fwrule.delete(:fwrule_uri)
+      fwrule.merge(:uri=>uri)
+    else; fwrule; end
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -422,8 +430,8 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def get_lb(uri)
-    json_to_hash(get(:uri    => uri,
-                     :accept => "#{LB_TYPE}, #{MESSAGE_TYPE}"))
+    fix_lb(json_to_hash(get(:uri    => uri,
+                            :accept => "#{LB_TYPE}, #{MESSAGE_TYPE}")))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -440,10 +448,10 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_lb(lb, body)
     validate([:name], body)
-    put(:uri          => lb[:uri],
-        :body         => body,
-        :accept       => "#{LB_TYPE}, #{MESSAGE_TYPE}",
-        :content_type => LB_TYPE)
+    fix_lb(json_to_hash(put(:uri          => lb[:uri],
+                            :body         => body,
+                            :accept       => "#{LB_TYPE}, #{MESSAGE_TYPE}",
+                            :content_type => LB_TYPE)))
    end
 
   #-------------------------------------------------------------------------------------------------
@@ -459,21 +467,31 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
+  def fix_lb(lb)
+    if lb[:lb_uri]
+      uri = lb.delete(:lb_uri)
+      lb.merge(:uri=>uri)
+    else; lb; end
+  end
+
+  #-------------------------------------------------------------------------------------------------
   # load balancer pool
   #------------------------------------------------------------------------------------------------
   def create_lbpool(lb, body)
-    validate([:name, :description], body)
-    post(:uri          => lbpools_uri(vdc),
-         :body         => body,
+    validate([:protocol, :description], body)
+    raise(ArgumentError, "#{body[:protocol]} invalid protocol") unless [:http, :https].include?(body[:protocol])
+    proto = body.delete(:protocol).to_s
+    post(:uri          => lbpools_uri(lb),
+         :body         => body.merge(:name => proto),
          :accept       => MESSAGE_TYPE,
          :content_type => LBPOOL_TYPE)
   end
 
   #-------------------------------------------------------------------------------------------------
   def get_lbpool(uri)
-    json_to_hash(get(:uri          => uri,
-                     :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
-                     :content_type => LBPOOL_TYPE))
+    fix_lbpool(json_to_hash(get(:uri          => uri,
+                                :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
+                                :content_type => LBPOOL_TYPE)))
   end
 
   #-------------------------------------------------------------------------------------------------
@@ -490,15 +508,15 @@ class CaaS
   #-------------------------------------------------------------------------------------------------
   def update_lbpool(lbpool, body)
     validate([:description], body)
-    put(:uri          => lbpool[:uri],
-        :body         => body,
-        :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
-        :content_type => LBPOOL_TYPE)
+    fix_lbpool(json_to_hash( put(:uri          => lbpool[:uri],
+                                 :body         => body,
+                                 :accept       => "#{LBPOOL_TYPE}, #{MESSAGE_TYPE}",
+                                 :content_type => LBPOOL_TYPE)))
    end
 
   #-------------------------------------------------------------------------------------------------
   def delete_lbpool(lbpool)
-     delete(:uri          => lb[:uri],
+     delete(:uri          => lbpool[:uri],
             :accept       => MESSAGE_TYPE,
             :content_type => LBPOOL_TYPE)
    end
@@ -509,11 +527,17 @@ class CaaS
   end
 
   #-------------------------------------------------------------------------------------------------
+  def fix_lbpool(lbpool)
+    proto = lbpool.delete(:name).to_sym
+    lbpool.merge(:protocol => proto)
+  end
+
+  #-------------------------------------------------------------------------------------------------
   # load balancer pool member
   #------------------------------------------------------------------------------------------------
   def create_lbpool_member(lbpool, body)
     validate([:name, :description, :ip, :port], body)
-    post(:uri          => lbpool_members_uri(vdc),
+    post(:uri          => lbpool_members_uri(lbpool),
          :body         => body,
          :accept       => MESSAGE_TYPE,
          :content_type => LBPOOL_MEMBER_TYPE)
@@ -533,7 +557,7 @@ class CaaS
 
   #-------------------------------------------------------------------------------------------------
   def list_lbpool_members(lbpool)
-    json_to_hash(get(:uri    => lbpool_members_uri(lb),
+    json_to_hash(get(:uri    => lbpool_members_uri(lbpool),
                      :accept => "#{LBPOOL_MEMBER_TYPE}, #{MESSAGE_TYPE}"))
   end
 
