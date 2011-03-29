@@ -27,36 +27,13 @@ def spawn_create_vm_test_threads(sessions, nthreads=2, nvms=5)
 end
 
 #----------------------------------------------------------------------------------------------------
-def create_test_session(user, password, site = 'https://206.17.20.10/CirrusServices/resources')
-  user = [user].flatten
-  password = [password].flatten
-  sessions = []
-  user.each_index do |i|
-    puts "CREATING SESSION"
-    puts "  USER: #{user[i]}"
-    puts "  PASSWORD: #{password[i]}"
-    puts "  SITE: #{site}"
-    session = {}
-    session[:caas]     = CaaS.new(user[i], password[i], site)
-    CaaS.retry_until{session[:caas].login}
-    session[:cloud]    = CaaS.retry_until{session[:caas].get_all_clouds.first}
-    session[:vdc]      = CaaS.retry_until{session[:caas].get_all_vdcs(session[:cloud]).first}
-    session[:cluster]  = CaaS.retry_until{session[:caas].get_all_clusters(session[:vdc]).first}
-    session[:location] = CaaS.retry_until{session[:caas].get_all_locations[1]}
-    session[:vnets]    = CaaS.retry_until{session[:caas].get_all_vnets(session[:cluster])}
-    sessions << session
-  end
-  sessions
-end
-
-#----------------------------------------------------------------------------------------------------
 def create_vm_test(ses, nvms=5)
  
   ### account params
   puts "STARTING CREATE VM TEST"
-  puts "  USER: #{ses[:caas][:uid]}"
-  puts "  PASSWORD: #{ses[:cass][:passwd]}"
-  puts "  SITE: #{ses[:caas][:site]}"
+  puts "  USER: #{ses[:caas].uid}"
+  puts "  PASSWORD: #{ses[:caas].passwd}"
+  puts "  SITE: #{ses[:caas].site}"
 
   ### session data
   caas = ses[:caas]
@@ -81,7 +58,7 @@ def create_vm_test(ses, nvms=5)
     p vm
     puts ">>>>> CUSTOMIZE VM: #{vm_name}"
     begin
-      CaaS.retry_until{caas.control_vm(vm, :customize, {:note=>'this sucks', :description=>'why do I have to do this'})}
+      CaaS.retry_until{caas.control_vm(vm, :customize, {:note=>'note', :description=>'description'})}
     rescue RestClient::BadRequest
       retry
     end
