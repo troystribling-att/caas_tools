@@ -1,0 +1,4 @@
+# default.gems generated gem export file. Note that any env variable settings will be missing. Append these after using a ';' field separator
+mime-types -v1.16
+net-ssh -v2.1.3
+rest-client -v1.6.1

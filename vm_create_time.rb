@@ -5,13 +5,19 @@ require 'net/ssh'
 class SSHError < Exception; end
 
 #-------------------------------------------------------------------------------------------------
-module Config
+module VMTestConfig
   SLEEP_RETRY = 10
   MAX_RETRIES = 100
+  UBUNTU          = "/vAppTemplate/vappTemplate-1796597075"
+  WINDOWS_2008    = "/vAppTemplate/vappTemplate-855535336"
+  RHEL55          = "/vAppTemplate/vappTemplate-1222801342"
+  SUSE            = "/vAppTemplate/vappTemplate-1453857859"
+  CENTOS          = "/vAppTemplate/vappTemplate-375943477"
+  SOLARIS         = "/vAppTemplate/vappTemplate-528701478"
 end
 
 #----------------------------------------------------------------------------------------------------
-def vm_create_time(ses, nvms=5, vmtemplate="/vAppTemplate/vappTemplate-1796597075")
+def vm_create_time(ses, nvms=5, vmtemplate = VMTestConfig::UBUNTU_64_BIT")
  
   ### account params
   puts "STARTING CREATE VM TEST"
@@ -61,7 +67,7 @@ def vm_create_time(ses, nvms=5, vmtemplate="/vAppTemplate/vappTemplate-179659707
     end
     time_to_create = Time.now().to_i - start_time
     puts ">>>>>> CREATE TIME: #{time_to_create}"    
-    results << {:vm => vm, :times => time_to_create, :connection_test => connection_test}
+    results << {:vm => vm, :time => time_to_create, :connection_test => connection_test}
   end
   results
 end
@@ -104,13 +110,13 @@ def test_vm_connection(vm)
     end
   rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
     puts ">>>>> CONNECTION ERROR"
-    sleep(Config::SLEEP_RETRY)
-    retry unless try_count > Config::MAX_RETRIES
+    sleep(VMTestConfig::SLEEP_RETRY)
+    retry unless try_count > VMTestConfig::MAX_RETRIES
   rescue Net::SSH::AuthenticationFailed
   rescue SSHError
     puts ">>>>> SSH ERROR"
-    sleep(Config::SLEEP_RETRY)
-    retry unless try_count > Config::MAX_RETRIES
+    sleep(VMTestConfig::SLEEP_RETRY)
+    retry unless try_count > VMTestConfig::MAX_RETRIES
   end
   result
 end
