@@ -1,4 +1,6 @@
-require './caas_web'
+#-------------------------------------------------------------------------------------------------
+$:.unshift(File.dirname(__FILE__))
+require 'lib/caas_web'
 
 #----------------------------------------------------------------------------------------------------
 def run_create_create_vm_test_forever(user, password, nthreads=2, nvms=5, site = 'https://206.17.20.10/CirrusServices/resources')

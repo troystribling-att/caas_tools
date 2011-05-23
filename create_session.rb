@@ -1,4 +1,6 @@
-require './caas_web'
+#-------------------------------------------------------------------------------------------------
+$:.unshift(File.dirname(__FILE__))
+require 'lib/caas_web'
 
 #----------------------------------------------------------------------------------------------------
 def create_session(user, password, site = 'https://206.17.20.10/CirrusServices/resources')

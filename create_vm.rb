@@ -1,5 +1,7 @@
-require './caas_web'
-require './create_session'
+#-------------------------------------------------------------------------------------------------
+$:.unshift(File.dirname(__FILE__))
+require 'lib/caas_web'
+require 'create_session'
 
 #----------------------------------------------------------------------------------------------------
 def create_vm(ses, vm_name, template)

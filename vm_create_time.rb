@@ -101,7 +101,7 @@ def test_vm_connection(vm)
     Net::SSH.start(host, 'root', :password => passwd) do |ssh|
       ssh.open_channel do |channel|
         channel.exec('whoami') do |ch, success|
-          rasie(SSHError) unless success
+          raise(SSHError) unless success
           channel.on_data do |ch, data|
             result = data.chomp.eql?('root')
           end
