@@ -19,7 +19,8 @@ end
 
 #----------------------------------------------------------------------------------------------------
 def log_error(msg, env, vm)
-  SshConfig.logger.error "#{msg}\n#{env}, #{vm['name']}, #{vm['ip']}"
+  SshConfig.logger.error "#{msg}"
+  SshConfig.logger.error "#{env}, #{vm['name']}, #{vm['ip']}"
   {:error => true, :error_msg => msg, :ip => vm['ip']}
 end
 
@@ -43,7 +44,8 @@ end
 def send_command(env, vm, cmd)
   response, try_count = '', 0
   error = false
-  SshConfig.logger.info "CONNECTING TO:   #{env}, #{vm['name']}, #{vm['ip']}\nSENDING COMMAND: #{cmd}"
+  SshConfig.logger.info "CONNECTING TO:   #{env}, #{vm['name']}, #{vm['ip']}"
+  SshConfig.logger.info "SENDING COMMAND: #{cmd}"
   begin
     try_count += 1
     exe_time = Time.now.to_f
@@ -58,6 +60,7 @@ def send_command(env, vm, cmd)
       end
     end
     SshConfig.logger.info "COMMAND SUCCEEDED IN #{exe_time}ms"
+    SshConfig.logger.info "RECEIVED RESPONSE #{response}"
     {:data => response, :tries => try_count, :error => false, :ip => vm['ip'], :elapsed_time_ms => (1000*(Time.now.to_f - exe_time)).to_i}
   rescue Errno::EHOSTUNREACH
     unless try_count == SshConfig::MAX_RETRIES
@@ -91,32 +94,65 @@ def get_uptimes(vms)
   send_commands(vms) do |env, vm|
     if vm['os'].eql?('linux')
       result = send_command(env, vm, 'cat /proc/uptime')
-p result      
-      (result[:uptime] = parse_linux_uptime(result.delete(:data)) ) unless result[:error]
+      (result[:data] = parse_linux_uptime(result.delete(:data)) ) unless result[:error]
     else 
       result = send_command(env, vm, 'uptime')
-      (result[:uptime] = parse_windows_uptime(result.delete(:data))) unless result[:error] 
-    end           
+      (result[:data] = parse_windows_uptime(result.delete(:data))) unless result[:error] 
+    end 
+    result          
   end
 end
 
 #----------------------------------------------------------------------------------------------------
-def selinux_enabled(vms)
+def selinux_enabled?(vms)
   send_commands(vms) do |env, vm|
     if vm['os'].eql?('linux')
-      result = send_command(env, vm, 'sestatus')            
-      (result[:selinux_enabled] =  parse_selinux_enabled(result.delete(:data))) unless result[:error]
+      result = send_command(env, vm, '/usr/sbin/sestatus')            
+      (result[:data] =  parse_selinux_enabled(result.delete(:data))) unless result[:error]
       result
     end             
   end
 end
 
 #----------------------------------------------------------------------------------------------------
-def iptables_enabled(vms)
+def iptables_running?(vms)
   send_commands(vms) do |env, vm|
     if vm['os'].eql?('linux')
-      result = send_command(env, vm, 'lsmod | grep ip_tables')    
-      (result[:iptables_enabled] =  parse_iptables_enabled(result.delete(:data))) unless result[:error]
+      result = send_command(env, vm, '/sbin/lsmod | grep ip_tables')    
+      (result[:data] =  parse_lsmod(result.delete(:data))) unless result[:error]
+      result
+    end             
+  end
+end
+
+#----------------------------------------------------------------------------------------------------
+def iptables_chkconfig?(vms)
+  send_commands(vms) do |env, vm|
+    if vm['os'].eql?('linux')
+      result = send_command(env, vm, '/sbin/chkconfig --list iptables')    
+      (result[:data] =  parse_chkconfig_enabled(result.delete(:data))) unless result[:error]
+      result
+    end             
+  end
+end
+
+#----------------------------------------------------------------------------------------------------
+def ip6tables_running?(vms)
+  send_commands(vms) do |env, vm|
+    if vm['os'].eql?('linux')
+      result = send_command(env, vm, '/sbin/lsmod | grep ip6_tables')    
+      (result[:data] =  parse_lsmod(result.delete(:data))) unless result[:error]
+      result
+    end             
+  end
+end
+
+#----------------------------------------------------------------------------------------------------
+def ip6tables_chkconfig?(vms)
+  send_commands(vms) do |env, vm|
+    if vm['os'].eql?('linux')
+      result = send_command(env, vm, '/sbin/chkconfig --list ip6tables')    
+      (result[:data] =  parse_chkconfig_enabled(result.delete(:data))) unless result[:error]
       result
     end             
   end
@@ -147,12 +183,20 @@ end
 #----------------------------------------------------------------------------------------------------
 def parse_selinux_enabled(cmd)
   raise(ShellParseError) unless cmd
-  cmd
+  comps = cmd.split("\n")
+  raise(ShellParseError) unless comps.length > 0
+  comps.first.include?('enabled') ? 'YES' : 'NO'
 end
 
 #----------------------------------------------------------------------------------------------------
-def parse_iptables_enabled(cmd)
+def parse_lsmod(cmd)
   raise(ShellParseError) unless cmd
-  cmd
+  cmd.empty? ? "NO" : "YES"
+end
+
+#----------------------------------------------------------------------------------------------------
+def parse_chkconfig_enabled(cmd)
+  raise(ShellParseError) unless cmd
+  cmd.include?('0:off	1:off	2:off	3:off	4:off	5:off	6:off') ? "NO" : "YES"
 end
 
