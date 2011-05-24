@@ -6,20 +6,8 @@ require 'lib/ssh_cmds'
 CONFIG = File.open(ARGV.first) {|yf| YAML::load(yf)}
 
 #----------------------------------------------------------------------------------------------------
-def write_rows(rows)
-  rows.each do |(ip,info)|
-    $stderr.puts "  EXTERNAL IP: #{ip}"
-    info.each do |i|
-      $stderr.puts "    ORG: #{i[:org]}, INTERNAL IP: #{i[:internal_ip]}, VM NAME: #{i[:vm_name]}," +
-        " VM URI: #{i[:vm_uri]}, VM MAC ADDRESS: #{i[:vm_mac_address]}"
-      puts "#{ip},#{i[:org]},#{i[:internal_ip]},#{i[:vm_name]},#{i[:vm_uri]},#{i[:vm_mac_address]}"
-    end
-  end
-end
-
-#----------------------------------------------------------------------------------------------------
 data = {}
-data[:uptime_days] = get_uptimes(CONFIG['vms'])
+data[:uptime_hours] = get_uptimes(CONFIG['vms'])
 data[:selinux_enabled] = selinux_enabled?(CONFIG['vms'])
 data[:iptables_running] = iptables_running?(CONFIG['vms'])
 data[:iptables_chkconfig_enabled] = iptables_chkconfig?(CONFIG['vms'])
@@ -33,8 +21,40 @@ data.each do |(data_type, envs)|
     agg_data[env] ||= {}
     vms.each do |(vm, vm_data)|
       agg_data[env][vm] ||= {}
-      agg_data[env][vm][data_type] ||= {:error => vm_data[:error], :error_msg => vm_data[:error_msg] || 'No Error', :tries => vm_data[:tries],
-                                        :elapsed_time_ms => vm_data[:elapsed_time_ms], :data => vm_data[:data], :ip => vm_data[:ip]}
+      agg_data[env][vm][data_type] ||= {:error_msg => vm_data[:error_msg] || 'No Error', :transaction_time_ms => vm_data[:elapsed_time_ms] || 'NA', 
+                                        :ip => vm_data[:ip], :data => vm_data[:data] || 'NA'}
     end
+  end
+end
+
+#----------------------------------------------------------------------------------------------------
+headers = ['environment', 'vm', 'ip']
+first_env = agg_data.keys.first
+first_vm = agg_data[first_env].keys.first
+agg_data[first_env][first_vm].each do |data_type, vm_data|
+  vm_data.keys.each do |vm_data_type|
+    unless vm_data_type.eql?(:ip)
+      if vm_data_type.eql?(:data)
+        (headers << (data_type.to_s).split('_').join(' ')) 
+      else
+        (headers << (data_type.to_s + ' ' + vm_data_type.to_s).split('_').join(' ')) 
+      end
+    end
+  end
+end
+
+#----------------------------------------------------------------------------------------------------
+puts headers.join(',')
+
+#----------------------------------------------------------------------------------------------------
+agg_data.each do |(env, vms)|
+  vms.each do |(vm, vm_data)|
+    data_out = [env, vm]
+    data_out << vm_data.first.last[:ip]
+    vm_data.each do |(data_types, type_data)|
+      type_data.delete(:ip)
+      data_out += type_data.values
+    end
+    puts data_out.join(',')
   end
 end
