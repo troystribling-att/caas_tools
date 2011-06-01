@@ -595,4 +595,6 @@ class VCD
       res += c.eql?(c.upcase) ? ('_' + c.downcase) : c  
     end; res
   end
+  
+#####VCD
 end

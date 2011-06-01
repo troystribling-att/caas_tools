@@ -10,7 +10,7 @@ class ShellParseError < Exception; end
 #----------------------------------------------------------------------------------------------------
 module SshConfig
   SLEEP_RETRY = 60
-  MAX_RETRIES = 10
+  MAX_RETRIES = 2
   APP_PATH = File.expand_path(File.dirname(__FILE__))
   @logger = Logger.new(File.join(APP_PATH, '../log', 'monitor.log'), 10, 1024000)
   def logger; @logger; end
