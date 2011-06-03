@@ -3,10 +3,15 @@ $:.unshift(File.dirname(__FILE__))
 require 'logger'
 require 'vcd'
 
-route_with_no_vm = []
-
-####################################################################################################
-def get_vms(vcd, org)
+#----------------------------------------------------------------------------------------------------
+module DuplicateIpsConfig
+  @logger = Logger.new(File.join(root, '../log', 'duplicate_ips.log'), 10, 1024000)
+  def logger; @logger; end
+  module_function :logger
+end
+  
+#----------------------------------------------------------------------------------------------------
+def get_vm_info_for_org(vcd, org)
   if vdc_info = org[:link][:vdc]
     vdc = vcd.get_vdc(org, vdc_info.keys.first)
     vapps = vdc[:resource_entity][:v_app] || {}
@@ -23,20 +28,20 @@ def get_vms(vcd, org)
   else; {}; end
 end
 
-####################################################################################################
+#----------------------------------------------------------------------------------------------------
 def duplicate_external_ips(vcd, org)
   ext_ips = {}
   dup_ips = {}
   orgs = vcd.get_orgs
   orgs[:org].keys.each do |org_href|
     org = vcd.get_org(orgs, org_href)
-    vms = get_vms(vcd, org)
-    $stderr.puts "CHECKING ORG: #{org[:name]}"
+    vms = get_vm_info_for_org(vcd, org)
+    DuplicateIpsConfig.logger.info "CHECKING ORG: #{org[:name]}"
     if nets = org[:link][:network]
       nets.keys.each do |n|
         net = vcd.get_network(org, n)
         if net[:name].include?('Public')
-          $stderr.puts "CHECKING NET: #{net[:name]}, #{n}"
+          DuplicateIpsConfig.logger.info "CHECKING NET: #{net[:name]}, #{n}"
           net[:nat_service].each do |s|
             if s[:external_port].eql?('22')
               ext_ip = s[:external_ip]
@@ -45,12 +50,12 @@ def duplicate_external_ips(vcd, org)
                           {:org => org[:name], :external_ip => ext_ip, :internal_ip => s[:internal_ip],
                            :vm_name => vm[:name], :vm_uri => vm[:uri], :vm_mac_address => vm[:mac_address]}
                         else
-                          $stderr.puts "FOUND RULE WITH NO VM: ORG:#{org[:name]}, ext_ip: #{ext_ip}, internal_ip:#{s[:internal_ip]}"
+                          DuplicateIpsConfig.logger.error "FOUND RULE WITH NO VM: ORG:#{org[:name]}, ext_ip: #{ext_ip}, internal_ip:#{s[:internal_ip]}"
                           {:org => org[:name], :external_ip => ext_ip, :internal_ip => s[:internal_ip],
                            :vm_name => '', :vm_uri => '', :vm_mac_address => ''}
                         end
               if ext_ips[ext_ip]
-                $stderr.puts "FOUND DUPLICATE IP: #{ip_info.inspect}"
+                DuplicateIpsConfig.logger.error "FOUND DUPLICATE IP: #{ip_info.inspect}"
                 (dup_ips[ext_ip] = ext_ips[ext_ip]) unless dup_ips[ext_ip]
                 dup_ips[ext_ip] << ip_info              
               else

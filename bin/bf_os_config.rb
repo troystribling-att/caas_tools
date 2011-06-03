@@ -8,7 +8,7 @@ EMAIL_CONFIG = File.open(send_email.yml) {|yf| YAML::load(yf)}
 
 #----------------------------------------------------------------------------------------------------
 data = {}
-data[:uptime_hours] = get_uptimes(CONFIG['vms'])
+data[:uptime_hours] = uptime(CONFIG['vms'])
 data[:selinux_enabled] = selinux_enabled?(CONFIG['vms'])
 data[:iptables_running] = iptables_running?(CONFIG['vms'])
 data[:iptables_chkconfig_enabled] = iptables_chkconfig?(CONFIG['vms'])
