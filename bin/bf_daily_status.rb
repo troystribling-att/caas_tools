@@ -61,4 +61,4 @@ file += agg_response.inject([]) do |f, (env, vms)|
         end.join("\n")
 
 #----------------------------------------------------------------------------------------------------
-send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg})", msg, 'status.csv', file, EMAIL_CONFIG['server'])
+send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg})", msg, "status-#{Time.now.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
