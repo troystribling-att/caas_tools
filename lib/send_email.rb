@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'pony' 
 
-def send_email(to, subject, msg, config)
+def send_email(to, subject, msg, file_name, file, config)
   Pony.mail(:to => to, :subject => subject, :body => msg, :charset => 'utf-8',
             :via => :smtp, :via_options => {:address => config["smtp_server"], 
                                             :port => config["port"], 
@@ -9,5 +9,6 @@ def send_email(to, subject, msg, config)
                                             :user_name => config["user_name"], 
                                             :password => config["password"], 
                                             :authentication => :plain, 
-                                            :domain => "HELO"})
+                                            :domain => "HELO"},
+            :attachments => {file_name => file})
 end

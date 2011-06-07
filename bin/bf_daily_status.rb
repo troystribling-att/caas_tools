@@ -39,32 +39,26 @@ reachable   = agg_response.inject({}) do |reach, (env, vms)|
          
 #----------------------------------------------------------------------------------------------------
 if unreachable_count > 0
-  unreachable_msg = "#{unreachable_count} SERVERS ARE NOT ACCESSIBLE\n" +
-                    "ENVIRONMENT     SERVER                                IP                ERROR\n" +
-                    "--------------------------------------------------------------------------------------------------------------\n"
-  unreachable_msg = unreachable.inject(unreachable_msg) do |msg, (env, vms)| 
+  short_msg = "#{unreachable_count} SERVERS ARE NOT ACCESSIBLE"
+  msg = "#{short_msg}\n"
+  msg = unreachable.inject(msg) do |msg, (env, vms)| 
+           msg += "\nENVIRONMENT: #{env}\n\n"
            vms.each do |(vm, data)|
-             msg += sprintf("%-15.15s | %-35.35s | %-15s | %-38.38s\n", env, vm, data[:ip], data[:error_msg])
+             msg += "    SERVER: #{vm}\n    IP: #{data[:ip]}\n    ERROR: #{data[:error_msg]}\n\n" 
            end; msg
          end 
 else
-  unreachable_msg = "THERE WERE NO ERRORS IN ACCESSING SERVERS\n"
+  short_msg = "ALL SERVERS ARE ACCESSIBLE"
+  msg = "#{short_msg}\n"
 end         
 
 #----------------------------------------------------------------------------------------------------
-if reachable_count > 0
-  reachable_msg = "#{reachable_count} SERVERS ARE ACCESSIBLE\n" + 
-                  "ENVIRONMENT     SERVER                                IP                TRIES   TRANSACTION(MS)    UPTIME(HRS)\n" +
-                  "--------------------------------------------------------------------------------------------------------------\n"
-  reachable_msg = reachable.inject(reachable_msg) do |msg, (env, vms)| 
-                    vms.each do |(vm, data)|
-                      msg += sprintf("%-15.15s | %-35.35s | %-15s | %-5s | %-16s | %-11s\n", env, vm, data[:ip], data[:tries], data[:elapsed_time_ms], data[:data])
-                    end; msg
-                  end
-else
-  reachable_msg = "NO SERVERS ACCESSIBLE\n"
-end                  
+file = "ENVIRONMENT,SERVER,IP,ERROR MSG,TRIES,TRANSACTION(MS),UPTIME(HRS)\n" 
+file += agg_response.inject([]) do |f, (env, vms)| 
+          vms.each do |(vm, data)|
+            f << [env, vm, data[:ip], data[:error_msg] || 'NO ERROR', data[:tries] || 'NA', data[:elapsed_time_ms] || 'NA', data[:data] || 'NA'].join(',')
+          end; f
+        end.join("\n")
 
 #----------------------------------------------------------------------------------------------------
-msg = "\n" + unreachable_msg + "\n\n\n" + reachable_msg
-send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'], msg, EMAIL_CONFIG['server'])
+send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg})", msg, 'status.csv', file, EMAIL_CONFIG['server'])
