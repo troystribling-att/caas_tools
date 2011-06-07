@@ -7,9 +7,10 @@ require "#{this_dir}/../lib/send_email"
 
 #-------------------------------------------------------------------------------------------------
 CONFIG = File.open(ARGV.first){|yf| YAML::load(yf)}
-EMAIL_CONFIG = File.open('send_email.yml') {|yf| YAML::load(yf)}
+EMAIL_CONFIG = File.open("#{this_dir}/../send_email.yml") {|yf| YAML::load(yf)}
 
 #----------------------------------------------------------------------------------------------------
+puts "STARTING RUN: #{Time.now.to_s}"
 bash_response = uptime(CONFIG['bash_vms'])
 apigee_response = apigee_shell(CONFIG['apigee_vms'])
 
@@ -61,4 +62,6 @@ file += agg_response.inject([]) do |f, (env, vms)|
         end.join("\n")
 
 #----------------------------------------------------------------------------------------------------
+puts "SENDING REPORT TO: #{EMAIL_CONFIG['msg']['to'].join(', ')}"
 send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg})", msg, "status-#{Time.now.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
+puts "ENDING RUN: #{Time.now.to_s}"
