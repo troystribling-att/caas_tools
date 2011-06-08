@@ -1,8 +1,4 @@
 #-------------------------------------------------------------------------------------------------
-require 'net/ssh'
-require 'logger'
-
-####################################################################################################
 $:.unshift(File.dirname(__FILE__))
 require 'ssh'
 
@@ -20,15 +16,6 @@ def uptime(vms)
     end 
     result          
   end
-end
-
-#----------------------------------------------------------------------------------------------------
-def apigee_shell(vms)
-  send_commands(vms) do |env, vm|
-      result = send_command(env, vm, 'show system status') 
-      (result[:data] =  parse_apigee_shell(result.delete(:data))) unless result[:error]
-      result
-  end             
 end
 
 #----------------------------------------------------------------------------------------------------
@@ -126,14 +113,6 @@ end
 def parse_chkconfig_enabled(cmd)
   raise(ShellParseError) unless cmd
   cmd.include?('0:off	1:off	2:off	3:off	4:off	5:off	6:off') ? "NO" : "YES"
-end
-
-#----------------------------------------------------------------------------------------------------
-# parse results apigee
-#----------------------------------------------------------------------------------------------------
-def parse_apigee_shell(cmd)
-  raise(ShellParseError) unless cmd
-  'NA'  
 end
 
 

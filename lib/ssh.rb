@@ -17,7 +17,7 @@ module SshConfig
 end
 
 #----------------------------------------------------------------------------------------------------
-def log_error(msg, env, vm)
+def log_ssh_error(msg, env, vm)
   SshConfig.logger.error "#{msg}"
   SshConfig.logger.error "#{env}, #{vm['name']}, #{vm['ip']}"
   {:error => true, :error_msg => msg, :ip => vm['ip']}
@@ -32,7 +32,7 @@ def send_commands(vms)
       results[env][vm['name']] = begin
                                    yield(env, vm)
                                  rescue ShellParseError
-                                   log_error("COMMAND PARSE ERROR", env, vm)
+                                   log_ssh_error("COMMAND PARSE ERROR", env, vm)
                                  end
     end
   end
@@ -58,31 +58,32 @@ def send_command(env, vm, cmd)
         end 
       end
     end
-    SshConfig.logger.info "COMMAND SUCCEEDED IN #{exe_time}ms"
+    elapsed_time = (1000*(Time.now.to_f - exe_time)).to_i
+    SshConfig.logger.info "COMMAND SUCCEEDED IN #{elapsed_time}ms"
     SshConfig.logger.info "RECEIVED RESPONSE #{response}"
-    {:data => response, :tries => try_count, :error => false, :ip => vm['ip'], :elapsed_time_ms => (1000*(Time.now.to_f - exe_time)).to_i}
+    {:data => response, :tries => try_count, :error => false, :ip => vm['ip'], :elapsed_time_ms =>elapsed_time}
   rescue Errno::EHOSTUNREACH
     unless try_count == SshConfig::MAX_RETRIES
-      log_error("HOST CONNECTION FAILD, RETRYING: #{try_count}", env, vm)
+      log_ssh_error("HOST CONNECTION FAILD, RETRYING: #{try_count}", env, vm)
       sleep(SshConfig::SLEEP_RETRY)
       retry 
     else
-      log_error("HOST UNREACHABLE AFTER #{try_count} TRIES", env, vm)
+      log_ssh_error("HOST UNREACHABLE AFTER #{try_count} TRIES", env, vm)
     end
   rescue Errno::ETIMEDOUT
     unless try_count == SshConfig::MAX_RETRIES
-      log_error("CONNECTION TIMEOUT, RETRYING: #{try_count}", env, vm)
+      log_ssh_error("CONNECTION TIMEOUT, RETRYING: #{try_count}", env, vm)
       sleep(SshConfig::SLEEP_RETRY)
       retry 
     else
-      log_error("CONNECTION TIMEOUT AFTER #{try_count} TRIES", env, vm)
+      log_ssh_error("CONNECTION TIMEOUT AFTER #{try_count} TRIES", env, vm)
     end
   rescue Errno::ECONNREFUSED
-    log_error("CONNECTION REFUSED", env, vm)
+    log_ssh_error("CONNECTION REFUSED", env, vm)
   rescue Net::SSH::AuthenticationFailed
-    log_error("AUTHENTICATION FAILED", env, vm)
+    log_ssh_error("AUTHENTICATION FAILED", env, vm)
   rescue SSHError
-    log_error("SSH COMMAND ERROR", env, vm)
+    log_ssh_error("SSH COMMAND ERROR", env, vm)
   end
 end
 

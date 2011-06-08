@@ -3,6 +3,7 @@ this_dir = File.expand_path(File.dirname(__FILE__))
 $:.unshift(this_dir)
 require 'yaml'
 require "#{this_dir}/../lib/cmds"
+require "#{this_dir}/../lib/apigee_cmds"
 require "#{this_dir}/../lib/send_email"
 
 #-------------------------------------------------------------------------------------------------
@@ -12,7 +13,7 @@ EMAIL_CONFIG = File.open("#{this_dir}/../send_email.yml") {|yf| YAML::load(yf)}
 #----------------------------------------------------------------------------------------------------
 puts "STARTING RUN: #{Time.now.to_s}"
 bash_response = uptime(CONFIG['bash_vms'])
-apigee_response = apigee_shell(CONFIG['apigee_vms'])
+apigee_response = apigee_uptime(CONFIG['apigee_vms'])
 
 #----------------------------------------------------------------------------------------------------
 envs = bash_response.keys
