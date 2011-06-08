@@ -54,7 +54,8 @@ else
 end         
 
 #----------------------------------------------------------------------------------------------------
-file = "ENVIRONMENT,SERVER,IP,ERROR MSG,TRIES,TRANSACTION(MS),UPTIME(HRS)\n" 
+report_time = Time.now
+file = "#{report_time.strftime("%Y-%m-%d %H:%M")}\nENVIRONMENT,SERVER,IP,ERROR MSG,TRIES,TRANSACTION(MS),UPTIME(HRS)\n" 
 file += agg_response.inject([]) do |f, (env, vms)| 
           vms.each do |(vm, data)|
             f << [env, vm, data[:ip], data[:error_msg] || 'NO ERROR', data[:tries] || 'NA', data[:elapsed_time_ms] || 'NA', data[:data] || 'NA'].join(',')
@@ -63,5 +64,5 @@ file += agg_response.inject([]) do |f, (env, vms)|
 
 #----------------------------------------------------------------------------------------------------
 puts "SENDING REPORT TO: #{EMAIL_CONFIG['msg']['to'].join(', ')}"
-send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg})", msg, "status-#{Time.now.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
+send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg}) #{report_time.strftime("%Y-%m-%d %H:%M")}", msg, "status-#{report_time.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
 puts "ENDING RUN: #{Time.now.to_s}"
