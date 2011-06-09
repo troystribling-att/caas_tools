@@ -51,15 +51,15 @@ def send_apigee_shell_command(env, vm, cmd)
   begin
     try_count += 1
     exe_time = Time.now.to_f
-    cmd_file = Tempfile.new("apigee_cmd:#{vm['ip']}")
+    cmd_file = File.new("apigee_cmd:#{vm['ip']}", 'w')
     cmd_file.chmod(0744)
     cmd_file << cmd
     cmd_file.close
-    response = `#{cmd_file.path}`
+    response = `#{File.absolute_path(cmd_file.path)}`
     raise(ApiGeeShellTimeout) if response.include?('timed out')
     raise(ApiGeeShellConnectionRefused) if response.include?('Connection refused')
     raise(ApiGeeShellAuthenitcationFailed) if response.include?("\r\n\r\nPassword: \r\nPassword: \r\n")
-    cmd_file.delete
+    File.delete(File.absolute_path(cmd_file.path))
     elapsed_time = (1000*(Time.now.to_f - exe_time)).to_i
     ApiGeeConfig.logger.info "COMMAND SUCCEEDED IN #{elapsed_time}ms"
     ApiGeeConfig.logger.info "RECEIVED RESPONSE #{response}"
