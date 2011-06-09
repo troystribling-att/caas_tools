@@ -6,7 +6,7 @@ require 'apigee_shell'
 # commands
 #----------------------------------------------------------------------------------------------------
 def apigee_uptime(vms)
-  send_commands(vms) do |env, vm|
+  send_apigee_shell_commands(vms) do |env, vm|
       cmd = <<CMD_TEXT
 #!/usr/bin/expect -f
 #
