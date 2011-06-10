@@ -11,9 +11,9 @@ CONFIG = File.open(ARGV.first){|yf| YAML::load(yf)}
 EMAIL_CONFIG = File.open("#{this_dir}/../send_email.yml") {|yf| YAML::load(yf)}
 
 #----------------------------------------------------------------------------------------------------
-puts "STARTING RUN: #{Time.now.to_s}"
-bash_response = uptime(CONFIG['bash_vms'])
-apigee_response = apigee_uptime(CONFIG['apigee_vms'])
+puts "INFO: STARTING RUN: #{Time.now.to_s}"
+bash_response = Cmds.uptime(CONFIG['bash_vms'])
+apigee_response = APIGeeCmds.uptime(CONFIG['apigee_vms'])
 
 #----------------------------------------------------------------------------------------------------
 envs = bash_response.keys
@@ -64,6 +64,19 @@ file += agg_response.inject([]) do |f, (env, vms)|
         end.join("\n")
 
 #----------------------------------------------------------------------------------------------------
-puts "SENDING REPORT TO: #{EMAIL_CONFIG['msg']['to'].join(', ')}"
-send_email(EMAIL_CONFIG['msg']['to'].join(', '), EMAIL_CONFIG['msg']['subject'] + " (#{short_msg}) #{report_time.strftime("%Y-%m-%d %H:%M %Z")}", msg, "status-#{report_time.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
-puts "ENDING RUN: #{Time.now.to_s}"
+email_status_to = EMAIL_CONFIG['msg']['to'].join(', ')
+puts "INFO: SENDING REPORT TO: #{email_status_to}"
+try_count = 0
+begin
+  try_count += 1
+  send_email(email_status_to, EMAIL_CONFIG['msg']['subject'] + " (#{short_msg}) #{report_time.strftime("%Y-%m-%d %H:%M %Z")}", msg, "status-#{report_time.strftime("%Y-%m-%d")}.csv", file, EMAIL_CONFIG['server'])
+rescue Net::SMTPServerBusy
+  if try_count < 5 
+    sleep(10)
+    puts "ERROR: FAILED TO MAIL REPORT TO: #{email_status_to} #{try_count} TIMES. RETRYING"
+    retry 
+  else
+    puts "ERROR: FAILED TO MAIL REPORT TO: #{email_status_to} #{try_count} TIMES. ABORTING"
+  end
+end
+puts "INFO: ENDING RUN: #{Time.now.to_s}"
