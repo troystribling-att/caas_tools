@@ -12,9 +12,9 @@ class Cmds
     # commands
     #----------------------------------------------------------------------------------------------------
     def uptime(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, 'cat /proc/uptime')
+          result = Ssh.command(env, vm, 'cat /proc/uptime')
           (result[:data] = parse_linux_uptime(result.delete(:data)) ) unless result[:error]
         else 
           result = send_command(env, vm, 'uptime')
@@ -26,9 +26,9 @@ class Cmds
 
     #----------------------------------------------------------------------------------------------------
     def selinux_enabled?(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, '/usr/sbin/sestatus')            
+          result = Ssh.command(env, vm, '/usr/sbin/sestatus')            
           (result[:data] =  parse_selinux_enabled(result.delete(:data))) unless result[:error]
           result
         end             
@@ -37,9 +37,9 @@ class Cmds
 
     #----------------------------------------------------------------------------------------------------
     def iptables_running?(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, '/sbin/lsmod | grep ip_tables')    
+          result = Ssh.command(env, vm, '/sbin/lsmod | grep ip_tables')    
           (result[:data] =  parse_lsmod(result.delete(:data))) unless result[:error]
           result
         end             
@@ -48,9 +48,9 @@ class Cmds
 
     #----------------------------------------------------------------------------------------------------
     def iptables_chkconfig?(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, '/sbin/chkconfig --list iptables')    
+          result = Ssh.command(env, vm, '/sbin/chkconfig --list iptables')    
           (result[:data] =  parse_chkconfig_enabled(result.delete(:data))) unless result[:error]
           result
         end             
@@ -59,9 +59,9 @@ class Cmds
 
     #----------------------------------------------------------------------------------------------------
     def ip6tables_running?(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, '/sbin/lsmod | grep ip6_tables')    
+          result = Ssh.command(env, vm, '/sbin/lsmod | grep ip6_tables')    
           (result[:data] =  parse_lsmod(result.delete(:data))) unless result[:error]
           result
         end             
@@ -70,9 +70,9 @@ class Cmds
 
     #----------------------------------------------------------------------------------------------------
     def ip6tables_chkconfig?(vms)
-      SSh.commands(vms) do |env, vm|
+      Ssh.commands(vms) do |env, vm|
         if vm['os'].eql?('linux')
-          result = SSh.command(env, vm, '/sbin/chkconfig --list ip6tables')    
+          result = Ssh.command(env, vm, '/sbin/chkconfig --list ip6tables')    
           (result[:data] =  parse_chkconfig_enabled(result.delete(:data))) unless result[:error]
           result
         end             

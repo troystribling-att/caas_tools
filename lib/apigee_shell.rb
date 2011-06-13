@@ -42,7 +42,7 @@ class APIGeeShell
           results[env][vm['name']] = begin
                                        yield(env, vm)
                                      rescue ApiGeeShellParseError
-                                       log_ssh_error("COMMAND PARSE ERROR", env, vm)
+                                       log_error("COMMAND PARSE ERROR", env, vm)
                                      end
         end
       end

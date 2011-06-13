@@ -17,8 +17,8 @@ class APIGeeCmds
           cmd = <<CMD_TEXT
 #!/usr/bin/expect -f
 #
-set timeout -1
-spawn ssh  #{vm['uid']}@#{vm['ip']}
+set timeout 10
+spawn ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no #{vm['uid']}@#{vm['ip']}
 match_max 100000
 expect "Password: "
 send -- "#{vm['password']}\r\r\r\r\r\r\r\r"
