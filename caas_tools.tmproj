@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>lib/send_email.rb</string>
+	<string>bf_r1.yml</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -21,6 +21,36 @@
 	<integer>309</integer>
 	<key>metaData</key>
 	<dict>
+		<key>ApigeeSMS.expt</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+			<key>columnSelection</key>
+			<false/>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>15</integer>
+			</dict>
+		</dict>
 		<key>README</key>
 		<dict>
 			<key>caret</key>
@@ -35,78 +65,48 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>ash_vcd.yml</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>3</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
 		<key>bf.yml</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>15</integer>
 				<key>line</key>
-				<integer>1</integer>
+				<integer>5</integer>
 			</dict>
-			<key>columnSelection</key>
-			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>228</integer>
-			</dict>
 		</dict>
 		<key>bf_r1.yml</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>6</integer>
+				<integer>21</integer>
 				<key>line</key>
-				<integer>81</integer>
+				<integer>251</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>48</integer>
+			<integer>234</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>9</integer>
 				<key>line</key>
-				<integer>81</integer>
+				<integer>251</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>10</integer>
+				<integer>21</integer>
 				<key>line</key>
-				<integer>81</integer>
+				<integer>251</integer>
 			</dict>
 		</dict>
 		<key>bin/bf_daily_status.rb</key>
@@ -114,28 +114,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>45</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>69</integer>
+				<integer>46</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>23</integer>
-		</dict>
-		<key>bin/bf_os_config.rb</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>28</integer>
-				<key>line</key>
-				<integer>10</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>7</integer>
+			<integer>35</integer>
 		</dict>
 		<key>bin/find_duplicate_ips.rb</key>
 		<dict>
@@ -179,6 +165,34 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
+		<key>lib/apigee_cmds.rb</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>13</integer>
+				<key>line</key>
+				<integer>20</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>3</integer>
+		</dict>
+		<key>lib/apigee_shell.rb</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>48</integer>
+				<key>line</key>
+				<integer>44</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>1</integer>
+		</dict>
 		<key>lib/caas_web.rb</key>
 		<dict>
 			<key>caret</key>
@@ -198,9 +212,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>12</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>29</integer>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -221,7 +235,7 @@
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>9</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
@@ -237,14 +251,28 @@
 				<integer>4</integer>
 			</dict>
 		</dict>
+		<key>lib/http_request.rb</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>3</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
 		<key>lib/send_email.rb</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>78</integer>
+				<integer>48</integer>
 				<key>line</key>
-				<integer>4</integer>
+				<integer>12</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -256,29 +284,29 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>29</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>22</integer>
+				<integer>24</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>16</integer>
+			<integer>10</integer>
 			<key>selectFrom</key>
 			<dict>
 				<key>column</key>
-				<integer>19</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>22</integer>
+				<integer>18</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
-				<integer>29</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>22</integer>
+				<integer>24</integer>
 			</dict>
 		</dict>
 		<key>lib/vcd.rb</key>
@@ -288,7 +316,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>8</integer>
+				<integer>3</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
@@ -301,14 +329,14 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>6</integer>
+				<integer>0</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>8</integer>
+				<integer>3</integer>
 			</dict>
 		</dict>
 		<key>lib/vm_create_time.rb</key>
@@ -376,7 +404,7 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>10</integer>
+				<integer>11</integer>
 			</dict>
 			<key>columnSelection</key>
 			<false/>
@@ -389,14 +417,14 @@
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>9</integer>
+				<integer>0</integer>
 			</dict>
 			<key>selectTo</key>
 			<dict>
 				<key>column</key>
 				<integer>0</integer>
 				<key>line</key>
-				<integer>10</integer>
+				<integer>11</integer>
 			</dict>
 		</dict>
 		<key>test.yml</key>
@@ -404,9 +432,9 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>22</integer>
+				<integer>21</integer>
 				<key>line</key>
-				<integer>6</integer>
+				<integer>15</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -418,8 +446,12 @@
 	<array>
 		<string>lib/vm_tools.rb</string>
 		<string>lib/vsm.rb</string>
+		<string>lib/http_request.rb</string>
 		<string>lib/ssh.rb</string>
+		<string>lib/apigee_shell.rb</string>
 		<string>lib/cmds.rb</string>
+		<string>lib/apigee_cmds.rb</string>
+		<string>bin/bf_daily_status.rb</string>
 		<string>lib/duplicate_ips.rb</string>
 		<string>lib/vcd.rb</string>
 		<string>lib/send_email.rb</string>
@@ -429,17 +461,13 @@
 		<string>default.gems</string>
 		<string>bf.yml</string>
 		<string>bf_r1.yml</string>
-		<string>bin/bf_os_config.rb</string>
-		<string>bin/find_duplicate_ips.rb</string>
-		<string>bin/bf_daily_status.rb</string>
-		<string>README</string>
-		<string>ash_vcd.yml</string>
+		<string>ApigeeSMS.expt</string>
 		<string>bin/vsm_ips.rb</string>
 		<string>lib/vm_create_time.rb</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{325, 119}, {1355, 909}}</string>
+	<string>{{322, 119}, {1355, 909}}</string>
 </dict>
 </plist>
