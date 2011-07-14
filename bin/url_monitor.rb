@@ -6,18 +6,17 @@ require 'rest_client'
 
 #-------------------------------------------------------------------------------------------------
 URLS = File.open(ARGV.first){|yf| YAML::load(yf)}
-FILE = File.open(ARGV.last, 'w')
 
 #-------------------------------------------------------------------------------------------------
 START_TIME = Time.now.to_i
 TIME_DELTA = 60
 
 #-------------------------------------------------------------------------------------------------
-FILE.write("URL, Timestamp, Time (epoch), Latency (ms), Status\n")
+puts "URL, Timestamp, Time (epoch), Latency (ms), Status"
 
 #-------------------------------------------------------------------------------------------------
 def write_data(url, time, latency, status)
-  FILE.write("#{url}, #{time}, #{time.to_i}, #{latency}, #{status}\n")
+  puts "#{url}, #{time}, #{time.to_i}, #{latency}, #{status}"
 end
 
 #-------------------------------------------------------------------------------------------------
